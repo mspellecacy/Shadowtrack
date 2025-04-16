@@ -1,0 +1,77 @@
+{
+  "turn": 3,
+  "light_sources": [
+    {
+      "label": "Ginny Hardbark",
+      "light_type": "Torch",
+      "radius_feet": 30,
+      "minutes_remaining": 30,
+      "last_roll": 4
+    },
+    {
+      "label": "Timbral Splint ",
+      "light_type": "Lantern",
+      "radius_feet": 15,
+      "minutes_remaining": 20,
+      "last_roll": 6
+    },
+    {
+      "label": "Aloona Morninglight ",
+      "light_type": {
+        "Spell": "Radiant Aura"
+      },
+      "radius_feet": 20,
+      "minutes_remaining": 10,
+      "last_roll": 1
+    }
+  ],
+  "encounter_table": [
+    "Goblin scouts",
+    "Skeleton patrol",
+    "Oozing slime",
+    "Lost adventurer",
+    "Swarm of bats",
+    "Mimic chest",
+    "Sinkhole"
+  ],
+  "torch_event_table": [
+    "You hear a distant moan in the dark...",
+    "A gust of wind threatens to blow out a torch.",
+    "You stumble over loose stones, nearly falling.",
+    "The smell of sulfur fills the air.",
+    "Whispers echo from nowhere.",
+    "A rat darts between your feet.",
+    "A slime drips on from the ceiling..."
+  ],
+  "encounter_roll": null,
+  "event_log": [
+    {
+      "turn": 1,
+      "events": [
+        "No encounter",
+        "A gust of wind threatens to blow out a torch."
+      ]
+    },
+    {
+      "turn": 2,
+      "events": [
+        "No encounter",
+        "A rat darts between your feet."
+      ]
+    },
+    {
+      "turn": 3,
+      "events": [
+        "!ENCOUNTER! - Skeleton patrol",
+        "A gust of wind threatens to blow out a torch."
+      ]
+    }
+  ],
+  "clock_elapsed": 1826,
+  "next_process_minutes": 40,
+  "process_interval_minutes": 10,
+  "new_light_type": "Torch",
+  "new_light_label": "",
+  "new_light_minutes": 60,
+  "new_light_range": 20
+}

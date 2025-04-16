@@ -80,7 +80,9 @@ pub struct ShadowtrackData {
     pub torch_event_table: Vec<String>,
     pub encounter_roll: Option<u8>,
     pub event_log: Vec<TurnEntry>,
-    pub clock_elapsed: u32,
+    pub clock_elapsed: u64,
+    pub next_process_minutes: Option<u64>,
+    pub process_interval_minutes: u64,
 
     pub new_light_type: LightSourceType,
     pub new_light_label: String,
@@ -99,10 +101,17 @@ impl Default for ShadowtrackData {
             new_light_label: String::new(),
             new_light_minutes: 60,
             new_light_range: 30,
-            encounter_table: DEFAULT_ENCOUNTER_TABLE.iter().map(|s| s.to_string()).collect(),
-            torch_event_table: DEFAULT_TORCH_EVENTS_TABLE.iter().map(|s| s.to_string()).collect(),
-            clock_elapsed: 0_u32,
+            encounter_table: DEFAULT_ENCOUNTER_TABLE
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+            torch_event_table: DEFAULT_TORCH_EVENTS_TABLE
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+            clock_elapsed: 0_u64,
+            next_process_minutes: None,
+            process_interval_minutes: 10,
         }
     }
 }
-

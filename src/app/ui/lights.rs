@@ -1,11 +1,11 @@
 use crate::app::rng::DefaultRandomSource;
+use crate::app::state::ShadowtrackData;
 use crate::app::systems::roll_light_event;
 use crate::app::{
     state::{LightSource, LightSourceType},
     ShadowtrackApp,
 };
 use egui::{Color32, RichText, Ui};
-use crate::app::state::ShadowtrackData;
 
 fn new_light_type_label(app: &mut ShadowtrackData) -> String {
     match &app.new_light_type {

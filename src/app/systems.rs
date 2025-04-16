@@ -1,7 +1,6 @@
 use crate::app::rng::RandomSource;
 use crate::app::state::{ShadowtrackData, TurnEntry};
 
-
 pub fn log_event(data: &mut ShadowtrackData, event_desc: &str) {
     match data.event_log.iter_mut().find(|e| e.turn == data.turn) {
         // Need a new TurnEntry for the log.
@@ -9,10 +8,10 @@ pub fn log_event(data: &mut ShadowtrackData, event_desc: &str) {
             let mut entry = TurnEntry::default();
             entry.turn = data.turn;
             entry.events.push(event_desc.to_string());
-            
+
             data.event_log.push(entry);
         }
-        // Update existing TurnEntry in log. 
+        // Update existing TurnEntry in log.
         Some(entry) => {
             entry.events.push(event_desc.to_string());
         }
@@ -46,13 +45,12 @@ pub fn roll_encounter(
 ) {
     if forced_encounter || rng.roll_range(1, 6) == 1 {
         let log_entry = if let Some(encounter) = rng.choose(&*data.encounter_table.clone()) {
-             format!("!ENCOUNTER! - {}", encounter)
-            } else {
+            format!("!ENCOUNTER! - {}", encounter)
+        } else {
             "[Error] Encounter table empty!".to_string()
         };
-        
+
         log_event(&mut data, log_entry.as_str());
-        
     } else {
         log_event(&mut data, "No encounter");
     }

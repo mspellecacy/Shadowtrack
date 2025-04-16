@@ -1,4 +1,5 @@
 #[cfg(test)]
+
 mod core {
     use crate::app::state::{ShadowtrackData, TurnEntry};
 
@@ -13,38 +14,51 @@ mod core {
     #[test]
     fn log_ordering() {
         let mut data = ShadowtrackData::default();
-        let turn_entry_0 = TurnEntry { turn: 0, events: vec![
-            "First".to_string(), "Second".to_string(), "Third".to_string()
-        ]};
-        let turn_entry_1 = TurnEntry { turn: 1, events: vec![
-            "Forth".to_string(), "Fifth".to_string(), "Sixth".to_string()
-        ]};
-        let turn_entry_2 = TurnEntry { turn: 2, events: vec![
-            "Seventh".to_string(), "Eighth".to_string(), "Ninth".to_string()
-        ]};
-        
+        let turn_entry_0 = TurnEntry {
+            turn: 0,
+            events: vec![
+                "First".to_string(),
+                "Second".to_string(),
+                "Third".to_string(),
+            ],
+        };
+        let turn_entry_1 = TurnEntry {
+            turn: 1,
+            events: vec![
+                "Forth".to_string(),
+                "Fifth".to_string(),
+                "Sixth".to_string(),
+            ],
+        };
+        let turn_entry_2 = TurnEntry {
+            turn: 2,
+            events: vec![
+                "Seventh".to_string(),
+                "Eighth".to_string(),
+                "Ninth".to_string(),
+            ],
+        };
+
         data.event_log.push(turn_entry_0.clone());
         data.event_log.push(turn_entry_1.clone());
         data.event_log.push(turn_entry_2.clone());
-        
-        
+
         assert!(data.event_log.contains(&turn_entry_0));
         assert!(data.event_log.contains(&turn_entry_1));
         assert!(data.event_log.contains(&turn_entry_2));
-        
+
         assert_eq!(data.event_log.len(), 3);
-        
+
         assert_eq!(data.event_log[0], turn_entry_0);
         assert_eq!(data.event_log[1], turn_entry_1);
         assert_eq!(data.event_log[2], turn_entry_2);
-        
+
         // "Third"
         assert_eq!(data.event_log[0].events[2], turn_entry_0.events[2]);
         // "Forth"
         assert_eq!(data.event_log[1].events[0], turn_entry_1.events[0]);
         // "Eighth"
         assert_eq!(data.event_log[2].events[1], turn_entry_2.events[1]);
-        
     }
 
     #[test]
@@ -99,12 +113,11 @@ mod core {
     }
 }
 
-#[cfg(test)]
 mod random {
     use crate::app::rng::{DefaultRandomSource, RandomSource};
-    
+
     #[test]
-    fn range_inclusive () {
+    fn range_inclusive() {
         let mut rng = DefaultRandomSource;
         let mut rolls: Vec<u32> = Vec::new();
         let min = 0;
@@ -127,15 +140,19 @@ mod random {
 
         assert!(choice.is_none());
     }
-    
+
     #[test]
     fn choose_inclusive() {
         let mut rng = DefaultRandomSource;
         let mut choices: Vec<String> = Vec::new();
         let choice_set: Vec<String> = vec!["first".into(), "second".into(), "third".into()];
-        
+
         for _ in 0..100 {
-            choices.push(rng.choose(&choice_set).expect("Something Broke Here").to_string());
+            choices.push(
+                rng.choose(&choice_set)
+                    .expect("Something Broke Here")
+                    .to_string(),
+            );
         }
 
         assert!(!choices.is_empty());
@@ -197,7 +214,9 @@ mod rolls {
 
         assert_eq!(data.event_log.len(), 1);
         assert_eq!(data.event_log[0].events.len(), 1);
-        assert!(data.event_log[0].events.contains(&String::from("No encounter")));
+        assert!(data.event_log[0]
+            .events
+            .contains(&String::from("No encounter")));
     }
 
     #[test]
@@ -211,7 +230,9 @@ mod rolls {
 
         assert_eq!(data.event_log.len(), 1);
         assert_eq!(data.event_log[0].events.len(), 1);
-        assert!(data.event_log[0].events.contains(&String::from("!ENCOUNTER! - Skeleton Ambush")));
+        assert!(data.event_log[0]
+            .events
+            .contains(&String::from("!ENCOUNTER! - Skeleton Ambush")));
     }
 
     #[test]
@@ -228,7 +249,7 @@ mod rolls {
         let mut rng = MockRng::new(vec![2], vec![]);
         process_light_burn(&mut data, &mut rng);
         let torch = &data.light_sources[0];
-        
+
         assert_eq!(torch.minutes_remaining, 10);
         assert_eq!(torch.last_roll, Some(2));
     }
@@ -245,6 +266,8 @@ mod rolls {
 
         assert_eq!(data.event_log.len(), 1);
         assert_eq!(data.event_log[0].events.len(), 1);
-        assert!(data.event_log[0].events.contains(&String::from("Torch sputters ominously.")));
+        assert!(data.event_log[0]
+            .events
+            .contains(&String::from("Torch sputters ominously.")));
     }
 }
