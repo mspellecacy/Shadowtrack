@@ -1,4 +1,6 @@
 /target
+Cargo.lock
+save.json
 
 # IDEs and editors
 .idea/*

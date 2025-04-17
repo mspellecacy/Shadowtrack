@@ -8,7 +8,7 @@ use crate::app::ui::{encounter::draw_encounter_ui, lights::draw_torch_ui};
 use eframe::{egui, App};
 use log::debug;
 use num_integer::Integer;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant};
 
 pub mod rng;
 pub mod save;
@@ -20,7 +20,8 @@ pub struct ShadowtrackApp {
     pub show_add_light_modal: bool,
     pub data: ShadowtrackData,
     pub clock_running: bool,
-    pub last_tick: u64,
+    pub last_tick: Instant,
+    pub rng: DefaultRandomSource,
 }
 
 impl Default for ShadowtrackApp {
@@ -29,10 +30,8 @@ impl Default for ShadowtrackApp {
             show_add_light_modal: false,
             data: ShadowtrackData::default(),
             clock_running: false,
-            last_tick: SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_secs(),
+            last_tick: Instant::now(),
+            rng: DefaultRandomSource,
         }
     }
 }
@@ -91,7 +90,7 @@ impl ShadowtrackApp {
     fn reset(&mut self) {
         *self = Self::default();
     }
-    
+
     pub fn toggle_clock(&mut self) {
         self.clock_running = !self.clock_running;
     }
@@ -103,31 +102,45 @@ impl ShadowtrackApp {
             self.data.clock_elapsed
         );
     }
+    
+    #[inline]
+    fn should_tick(&self, now: Instant) -> Option<u64> {
+        let elapsed = now.duration_since(self.last_tick);
+        if elapsed >= Duration::from_secs(1) {
+            Some(elapsed.as_secs())
+        } else {
+            None
+        }
+    }
+    
     fn handle_clock_tick(&mut self) {
-        let new_tick = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs();
+        let now = Instant::now();
 
-        if self.last_tick < new_tick {
-            self.last_tick = new_tick;
+        // Tick every second
+        if let Some(secs) = self.should_tick(now) {
+            self.last_tick += Duration::from_secs(secs);
+            
             if self.clock_running {
-                self.data.clock_elapsed += 1;
+                // Advance game clock
+                self.data.clock_elapsed += secs;
                 let (elapsed_minutes, _seconds) = self.data.clock_elapsed.div_rem(&60);
-                if let Some(next_minutes) = self.data.next_process_minutes {
-                    if elapsed_minutes >= next_minutes {
-                        let mut rng = DefaultRandomSource;
+                match self.data.next_process_minutes {
+                    Some(next_minutes) if elapsed_minutes >= next_minutes => {
                         self.data.turn += 1;
-                        process_light_burn(&mut self.data, &mut rng);
-                        roll_light_event(&mut self.data, &mut rng);
-                        roll_encounter(&mut self.data, &mut rng, false);
+
+                        process_light_burn(&mut self.data, &mut self.rng);
+                        roll_light_event(&mut self.data, &mut self.rng);
+                        roll_encounter(&mut self.data, &mut self.rng, false);
+
                         self.data.next_process_minutes =
                             Some(elapsed_minutes + self.data.process_interval_minutes);
                     }
-                } else {
-                    // First tick with running game clock, we need to set a value to check against.
-                    // TODO: Implement user-configurable value for process interval.
-                    self.data.next_process_minutes = Some(self.data.process_interval_minutes);
+                    None => {
+                        // First activation of process timer, we need to set a value to check against.
+                        // TODO: Implement user-configurable value for process interval.
+                        self.data.next_process_minutes = Some(self.data.process_interval_minutes);
+                    }
+                    _ => { /* do nothing */ }
                 }
             }
         }

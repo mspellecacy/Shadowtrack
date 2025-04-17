@@ -38,17 +38,17 @@ pub fn draw_clock(app: &mut ShadowtrackApp, ui: &mut Ui) {
     let style = Style::default();
     let mut layout = LayoutJob::default();
     let (minutes, seconds) = app.data.clock_elapsed.div_rem(&60);
-    
+
     // Timer Label
     RichText::from("Game Time: ")
         .size(24_f32)
-        .color(Color32::LIGHT_BLUE)
+        .color(Color32::RED)
         .strong()
         .append_to(&mut layout, &style, FontSelection::Default, Align::Center);
     // Timer
     RichText::from(format!("{minutes:02}:{seconds:02}"))
         .size(24_f32)
-        .color(Color32::DARK_RED)
+        .color(Color32::LIGHT_RED)
         .strong()
         .append_to(&mut layout, &style, FontSelection::Default, Align::Center);
 
