@@ -1,7 +1,77 @@
 #[cfg(test)]
 
-mod core {
+mod app {
+    use crate::app::systems::{process_light_burn, roll_encounter, roll_light_event};
+    use crate::app::rng::{DefaultRandomSource, RandomSource};
     use crate::app::state::{ShadowtrackData, TurnEntry};
+    use crate::app::state::{LightSource, LightSourceType};
+    use crate::app::ShadowtrackApp;
+    use std::ops::{Sub};
+    use std::time::{Duration, Instant};
+
+    #[test]
+    fn test_app_defaults() {
+        let app = ShadowtrackApp::default();
+        assert!(&app.data.clock_elapsed.eq(&0));
+        assert!(&app.data.event_log.is_empty());
+        assert!(&app.data.light_sources.is_empty());
+        assert!(!&app.data.encounter_table.is_empty());
+        assert!(!&app.data.torch_event_table.is_empty());
+    }
+
+    #[test]
+    fn test_app_ticks() {
+        let mut app = ShadowtrackApp::default();
+        assert_eq!(app.clock_running, false);
+        app.toggle_clock();
+        assert_eq!(app.clock_running, true);
+        
+        app.last_tick = Instant::now().sub(Duration::from_secs(60));
+        app.handle_clock_tick();
+        
+        assert_eq!(app.data.clock_elapsed, 60);
+    }
+
+    #[test]
+    fn test_app_handles_intervaled_events() {
+        let mock_light_source = LightSource {
+            label: "Mock Light Label".to_string(),
+            radius_feet: 10,
+            light_type: LightSourceType::Spell("Mock Testing Spell".to_string()),
+            minutes_remaining: 420,
+            last_roll: Some(69),
+        };
+        let mut app = ShadowtrackApp::default();
+        app.data.light_sources.push(mock_light_source.clone());
+        app.toggle_clock();
+
+        // Set last_tick to 60 seconds in the past and handle the time change.
+        app.last_tick = Instant::now().sub(Duration::from_secs(60));
+        app.handle_clock_tick();
+
+        // Did we account for those 60 seconds and properly set up the interval period?
+        assert!(app.data.event_log.is_empty());
+        assert_eq!(app.data.clock_elapsed, 60);
+        assert_eq!(
+            app.data.next_process_minutes,
+            Some(app.data.process_interval_minutes)
+        );
+
+        // Advance the clock 10 minutes, fake a last_tick in the past, handle the time change.
+        app.data.clock_elapsed = 0;
+        app.last_tick = Instant::now().sub(Duration::from_secs(600));
+        app.handle_clock_tick();
+
+        // Did we account for the 10 minutes properly by running the interval processes?
+        assert!(!app.data.event_log.is_empty());
+        assert!(
+            app.data.light_sources.get(0).unwrap().minutes_remaining
+                < mock_light_source.minutes_remaining
+        );
+        assert_eq!(app.data.clock_elapsed, 600);
+    }
+
+    
 
     #[test]
     fn add_new_encounter_table_entry() {
@@ -13,6 +83,9 @@ mod core {
 
     #[test]
     fn log_ordering() {
+        // TODO: This really just checks that Vec maintains insertion order, and it does.
+        // Currently I dont know how to properly setup a testing harness to test the egui widgets
+        // displaying the log in reverse order. So for now this is just a sanity check.
         let mut data = ShadowtrackData::default();
         let turn_entry_0 = TurnEntry {
             turn: 0,
@@ -111,10 +184,8 @@ mod core {
         // clean up.
         fs::remove_file(test_save_file).unwrap();
     }
-}
 
-mod random {
-    use crate::app::rng::{DefaultRandomSource, RandomSource};
+   
 
     #[test]
     fn range_inclusive() {
@@ -161,14 +232,10 @@ mod random {
         assert!(choices.contains(&choice_set[2]));
         assert!(!choices.contains(&"fifth".to_string()));
     }
-}
 
-#[cfg(test)]
-mod rolls {
-    use crate::app::state::ShadowtrackData;
-    use crate::app::systems::{process_light_burn, roll_encounter, roll_light_event};
+    
 
-    /// A mock RNG source to control test results
+    // A mock RNG source to control test results
     struct MockRng {
         roll_values: Vec<u32>,
         choose_indices: Vec<usize>,

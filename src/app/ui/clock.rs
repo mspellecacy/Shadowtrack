@@ -48,7 +48,7 @@ pub fn draw_clock(app: &mut ShadowtrackApp, ui: &mut Ui) {
     // Timer
     RichText::from(format!("{minutes:02}:{seconds:02}"))
         .size(24_f32)
-        .color(Color32::LIGHT_RED)
+        .color(Color32::DARK_GRAY)
         .strong()
         .append_to(&mut layout, &style, FontSelection::Default, Align::Center);
 

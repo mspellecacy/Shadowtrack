@@ -102,7 +102,7 @@ impl ShadowtrackApp {
             self.data.clock_elapsed
         );
     }
-    
+
     #[inline]
     fn should_tick(&self, now: Instant) -> Option<u64> {
         let elapsed = now.duration_since(self.last_tick);
@@ -112,14 +112,12 @@ impl ShadowtrackApp {
             None
         }
     }
-    
-    fn handle_clock_tick(&mut self) {
-        let now = Instant::now();
 
+    pub(crate) fn handle_clock_tick(&mut self) {
         // Tick every second
-        if let Some(secs) = self.should_tick(now) {
+        if let Some(secs) = self.should_tick(Instant::now()) {
             self.last_tick += Duration::from_secs(secs);
-            
+
             if self.clock_running {
                 // Advance game clock
                 self.data.clock_elapsed += secs;
