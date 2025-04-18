@@ -45,7 +45,7 @@ impl App for ShadowtrackApp {
                     if ui.button("Save").clicked() {
                         ui.close_menu();
                         if let Err(e) = save_to_file(&self.data) {
-                            eprintln!("Failed to save game: {}", e);
+                            eprintln!("Failed to save the game: {}", e);
                         }
                     }
 
@@ -104,7 +104,7 @@ impl ShadowtrackApp {
     }
 
     #[inline]
-    fn should_tick(&self, now: Instant) -> Option<u64> {
+    pub(crate) fn should_tick(&self, now: Instant) -> Option<u64> {
         let elapsed = now.duration_since(self.last_tick);
         if elapsed >= Duration::from_secs(1) {
             Some(elapsed.as_secs())
